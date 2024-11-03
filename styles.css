@@ -77,21 +77,21 @@ header {
     border-bottom: none;
 }
 
-#logout-button {
-    background-color: #e0245e;
+#logout-button, #edit-profile-button {
+    background-color: #1da1f2;
     padding: 6px 12px;
     font-size: 14px;
     border-radius: 4px;
     transition: background-color 0.3s, transform 0.1s;
-    width: auto; /* Изменено с 100% на авто для компактности */
-    min-width: 80px; /* Минимальная ширина для удобства */
+    margin-left: 10px;
+    width: auto; /* Сделать кнопки "Выйти" и "Редактировать профиль" компактными */
 }
 
-#logout-button:hover {
-    background-color: #c81e54;
+#logout-button:hover, #edit-profile-button:hover {
+    background-color: #0d95e8;
 }
 
-#logout-button:active {
+#logout-button:active, #edit-profile-button:active {
     transform: scale(0.98);
 }
 
@@ -144,6 +144,43 @@ section {
     color: #657786;
 }
 
+/* Модальное окно */
+.modal {
+    display: none; /* Скрыто по умолчанию */
+    position: fixed; /* Оставаться на месте */
+    z-index: 1; /* Расположено на вершине */
+    left: 0;
+    top: 0;
+    width: 100%; /* Полная ширина */
+    height: 100%; /* Полная высота */
+    overflow: auto; /* Включить прокрутку при необходимости */
+    background-color: rgba(0, 0, 0, 0.4); /* Чёрный с прозрачностью */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% сверху и центрирование */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Ширина модального окна */
+    max-width: 400px; /* Максимальная ширина */
+    border-radius: 8px;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+}
+
 /* Адаптивность */
 @media (max-width: 600px) {
     #auth-container, #main-container {
@@ -155,7 +192,7 @@ section {
         margin-bottom: 15px;
     }
 
-    button, #logout-button {
+    button, #logout-button, #edit-profile-button {
         padding: 6px 8px;
         font-size: 13px;
     }
@@ -173,5 +210,9 @@ section {
     .reaction-count {
         margin-left: 2px;
         font-size: 13px;
+    }
+
+    .modal-content {
+        width: 90%;
     }
 }

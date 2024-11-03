@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eqwaak</title>
+    <title>Моя Платформа</title>
     <link rel="stylesheet" href="styles.css">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -31,12 +31,15 @@
 
     <div id="main-container" style="display: none;">
         <header>
-            <h1>Eqwaak</h1>
-            <button id="logout-button">Выйти</button>
+            <h1>Моя Платформа</h1>
+            <div>
+                <button id="edit-profile-button">Редактировать профиль</button>
+                <button id="logout-button">Выйти</button>
+            </div>
         </header>
         <section id="profile-section">
             <h2>Профиль</h2>
-            <p id="profile-username"></p>
+            <p id="profile-username">Загрузка...</p>
         </section>
         <section id="post-section">
             <h2>Создать сообщение</h2>
@@ -47,6 +50,16 @@
             <h2>Лента</h2>
             <div id="feed"></div>
         </section>
+    </div>
+
+    <!-- Модальное окно для редактирования профиля -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Редактировать профиль</h3>
+            <input type="text" id="edit-display-name" placeholder="Отображаемое имя">
+            <button id="save-profile-button">Сохранить</button>
+        </div>
     </div>
 
     <script src="script.js"></script>

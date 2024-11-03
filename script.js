@@ -13,6 +13,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+console.log("Firebase initialized");
+
 // Элементы DOM
 const showRegister = document.getElementById('show-register');
 const showLogin = document.getElementById('show-login');
@@ -29,17 +31,26 @@ const postButton = document.getElementById('post-button');
 const postContent = document.getElementById('post-content');
 const feed = document.getElementById('feed');
 
+// Элементы модального окна редактирования профиля
+const editProfileButton = document.getElementById('edit-profile-button');
+const editProfileModal = document.getElementById('edit-profile-modal');
+const closeModalButton = document.querySelector('.close-button');
+const saveProfileButton = document.getElementById('save-profile-button');
+const editDisplayNameInput = document.getElementById('edit-display-name');
+
 // Переключение форм регистрации и входа
 showRegister.addEventListener('click', (e) => {
     e.preventDefault();
     loginForm.style.display = 'none';
     registerForm.style.display = 'block';
+    console.log("Switched to Register form");
 });
 
 showLogin.addEventListener('click', (e) => {
     e.preventDefault();
     registerForm.style.display = 'none';
     loginForm.style.display = 'block';
+    console.log("Switched to Login form");
 });
 
 // Регистрация пользователя
@@ -47,23 +58,30 @@ registerButton.addEventListener('click', () => {
     const email = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value.trim();
 
+    console.log(`Attempting to register with email: ${email}`);
+
     if (email === '' || password === '') {
         alert('Пожалуйста, заполните все поля.');
+        console.warn("Registration failed: Empty fields");
         return;
     }
 
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // Добавление пользователя в Firestore
+            console.log(`User registered: ${userCredential.user.uid}`);
+            // Добавление пользователя в Firestore с displayName = email по умолчанию
             return db.collection('users').doc(userCredential.user.uid).set({
                 email: email,
+                displayName: email.split('@')[0], // Инициализация displayName
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         })
         .then(() => {
             alert('Регистрация прошла успешно!');
+            console.log("User data saved to Firestore");
         })
         .catch((error) => {
+            console.error(`Registration error: ${error.message}`);
             alert(`Ошибка: ${error.message}`);
         });
 });
@@ -73,16 +91,20 @@ loginButton.addEventListener('click', () => {
     const email = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value.trim();
 
+    console.log(`Attempting to login with email: ${email}`);
+
     if (email === '' || password === '') {
         alert('Пожалуйста, заполните все поля.');
+        console.warn("Login failed: Empty fields");
         return;
     }
 
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-            // Успешный вход
+            console.log('User signed in');
         })
         .catch((error) => {
+            console.error(`Login error: ${error.message}`);
             alert(`Ошибка: ${error.message}`);
         });
 });
@@ -90,11 +112,13 @@ loginButton.addEventListener('click', () => {
 // Наблюдатель состояния аутентификации
 auth.onAuthStateChanged((user) => {
     if (user) {
+        console.log(`User is signed in: ${user.uid}`);
         authContainer.style.display = 'none';
         mainContainer.style.display = 'block';
         loadProfile(user);
         loadFeed();
     } else {
+        console.log('No user is signed in');
         authContainer.style.display = 'block';
         mainContainer.style.display = 'none';
         feed.innerHTML = ''; // Очистить ленту при выходе
@@ -103,16 +127,28 @@ auth.onAuthStateChanged((user) => {
 
 // Загрузка профиля пользователя
 function loadProfile(user) {
-    profileUsername.textContent = `Электронная почта: ${user.email}`;
+    db.collection('users').doc(user.uid).get().then((doc) => {
+        if (doc.exists) {
+            const userData = doc.data();
+            profileUsername.textContent = `Имя: ${userData.displayName}`;
+            console.log(`Profile loaded for user: ${user.uid}`);
+        } else {
+            console.warn("No such user document!");
+            profileUsername.textContent = "Имя: Неизвестно";
+        }
+    }).catch((error) => {
+        console.error(`Error fetching user data: ${error.message}`);
+    });
 }
 
 // Выход пользователя
 logoutButton.addEventListener('click', () => {
     auth.signOut()
         .then(() => {
-            // Успешный выход
+            console.log('User signed out');
         })
         .catch((error) => {
+            console.error(`Logout error: ${error.message}`);
             alert(`Ошибка: ${error.message}`);
         });
 });
@@ -122,8 +158,11 @@ postButton.addEventListener('click', () => {
     const content = postContent.value.trim();
     const user = auth.currentUser;
 
+    console.log(`Attempting to post: "${content}" by user: ${user ? user.uid : 'None'}`);
+
     if (content === '') {
         alert('Пожалуйста, введите сообщение.');
+        console.warn("Post failed: Empty content");
         return;
     }
 
@@ -134,23 +173,29 @@ postButton.addEventListener('click', () => {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         })
         .then(() => {
+            console.log('Post added');
             postContent.value = '';
             // Не обязательно вызывать loadFeed(), так как мы используем onSnapshot()
         })
         .catch((error) => {
+            console.error(`Post error: ${error.message}`);
             alert(`Ошибка: ${error.message}`);
         });
+    } else {
+        console.warn("Post failed: No user authenticated");
     }
 });
 
 // Загрузка ленты сообщений
 function loadFeed() {
     feed.innerHTML = '';
+    console.log('Loading feed');
 
     db.collection('posts')
         .orderBy('createdAt', 'desc')
         .limit(50)
         .onSnapshot((querySnapshot) => {
+            console.log('Feed snapshot received');
             feed.innerHTML = ''; // Очистить перед обновлением
             querySnapshot.forEach((doc) => {
                 const post = doc.data();
@@ -162,21 +207,36 @@ function loadFeed() {
 
                 // Получение данных пользователя
                 db.collection('users').doc(post.userId).get().then((userDoc) => {
-                    const userData = userDoc.data();
-                    const date = post.createdAt ? post.createdAt.toDate() : new Date();
-                    const formattedDate = formatDate(date);
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        const date = post.createdAt ? post.createdAt.toDate() : new Date();
+                        const formattedDate = formatDate(date);
 
-                    postDiv.innerHTML = `
-                        <p><strong>${userData.email}</strong> <span>${formattedDate}</span></p>
-                        <p>${post.content}</p>
-                        <div class="reactions-container" id="reactions-${postId}">
-                            <!-- Реакции будут добавлены здесь -->
-                        </div>
-                    `;
-                    feed.appendChild(postDiv);
+                        postDiv.innerHTML = `
+                            <p><strong>${userData.displayName}</strong> <span>${formattedDate}</span></p>
+                            <p>${post.content}</p>
+                            <div class="reactions-container" id="reactions-${postId}">
+                                <!-- Реакции будут добавлены здесь -->
+                            </div>
+                        `;
+                        feed.appendChild(postDiv);
 
-                    // Загрузка реакций для этого поста
-                    loadReactions(postId);
+                        // Загрузка реакций для этого поста
+                        loadReactions(postId);
+                    } else {
+                        console.warn(`No user document for userId: ${post.userId}`);
+                        postDiv.innerHTML = `
+                            <p><strong>Неизвестный пользователь</strong> <span>${formatDate(new Date())}</span></p>
+                            <p>${post.content}</p>
+                            <div class="reactions-container" id="reactions-${postId}">
+                                <!-- Реакции будут добавлены здесь -->
+                            </div>
+                        `;
+                        feed.appendChild(postDiv);
+                        loadReactions(postId);
+                    }
+                }).catch((error) => {
+                    console.error(`Error fetching user data: ${error.message}`);
                 });
             });
         }, (error) => {
@@ -202,6 +262,7 @@ function formatDate(date) {
 // Функция для загрузки и отображения реакций
 function loadReactions(postId) {
     const reactionsContainer = document.getElementById(`reactions-${postId}`);
+    console.log(`Loading reactions for post: ${postId}`);
 
     // Определение типов реакций
     const reactionTypes = [
@@ -213,10 +274,12 @@ function loadReactions(postId) {
 
     // Получение текущего пользователя
     const currentUser = auth.currentUser;
+    console.log(`Current user in loadReactions: ${currentUser ? currentUser.uid : 'None'}`);
 
     // Прослушивание изменений в реакциях для этого поста
     db.collection('posts').doc(postId).collection('reactions')
         .onSnapshot((querySnapshot) => {
+            console.log(`Reactions snapshot received for post: ${postId}`);
             const reactionsCount = {};
 
             querySnapshot.forEach((doc) => {
@@ -227,6 +290,8 @@ function loadReactions(postId) {
                     reactionsCount[reaction.type] = 1;
                 }
             });
+
+            console.log('Reactions count:', reactionsCount);
 
             // Очистить контейнер реакций перед обновлением
             reactionsContainer.innerHTML = '';
@@ -247,6 +312,8 @@ function loadReactions(postId) {
                     }
                 });
 
+                console.log(`Reaction: ${reaction.type}, User reacted: ${userReacted}`);
+
                 // Создание кнопки реакции
                 const reactionButton = document.createElement('button');
                 reactionButton.classList.add('reaction-button');
@@ -264,9 +331,10 @@ function loadReactions(postId) {
 
                 // Добавление обработчика события
                 reactionButton.addEventListener('click', () => {
+                    console.log(`Reaction button clicked: ${reaction.type} for post: ${postId}`);
                     handleReaction(postId, reaction.type, userReacted, userReactionDocId)
                         .then(() => {
-                            // Реакции обновятся автоматически через onSnapshot
+                            console.log('Reaction handled successfully.');
                         })
                         .catch((error) => {
                             console.error("Ошибка при обработке реакции: ", error);
@@ -286,9 +354,11 @@ function handleReaction(postId, reactionType, userReacted, reactionDocId) {
     const reactionRef = db.collection('posts').doc(postId).collection('reactions');
 
     if (userReacted) {
+        console.log(`Removing reaction: ${reactionType} from user: ${currentUser.uid}`);
         // Если пользователь уже поставил реакцию, удаляем её
         return reactionRef.doc(reactionDocId).delete();
     } else {
+        console.log(`Adding reaction: ${reactionType} from user: ${currentUser.uid}`);
         // Иначе добавляем новую реакцию
         return reactionRef.add({
             type: reactionType,
@@ -297,3 +367,66 @@ function handleReaction(postId, reactionType, userReacted, reactionDocId) {
         });
     }
 }
+
+// Открытие модального окна редактирования профиля
+editProfileButton.addEventListener('click', () => {
+    const user = auth.currentUser;
+    if (user) {
+        db.collection('users').doc(user.uid).get().then((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                editDisplayNameInput.value = userData.displayName || '';
+                editProfileModal.style.display = 'block';
+                console.log("Edit profile modal opened");
+            } else {
+                console.warn("No user document found!");
+            }
+        }).catch((error) => {
+            console.error(`Error fetching user data: ${error.message}`);
+        });
+    }
+});
+
+// Закрытие модального окна
+closeModalButton.addEventListener('click', () => {
+    editProfileModal.style.display = 'none';
+    console.log("Edit profile modal closed");
+});
+
+// Закрытие модального окна при клике вне его
+window.addEventListener('click', (event) => {
+    if (event.target == editProfileModal) {
+        editProfileModal.style.display = 'none';
+        console.log("Edit profile modal closed by clicking outside");
+    }
+});
+
+// Сохранение изменений профиля
+saveProfileButton.addEventListener('click', () => {
+    const newDisplayName = editDisplayNameInput.value.trim();
+    const user = auth.currentUser;
+
+    if (newDisplayName === '') {
+        alert('Пожалуйста, введите отображаемое имя.');
+        console.warn("Save profile failed: Empty display name");
+        return;
+    }
+
+    if (user) {
+        db.collection('users').doc(user.uid).update({
+            displayName: newDisplayName
+        })
+        .then(() => {
+            alert('Профиль обновлен успешно!');
+            editProfileModal.style.display = 'none';
+            console.log("User displayName updated");
+            loadProfile(user); // Обновить отображение профиля
+        })
+        .catch((error) => {
+            console.error(`Error updating profile: ${error.message}`);
+            alert(`Ошибка: ${error.message}`);
+        });
+    } else {
+        console.warn("Save profile failed: No user authenticated");
+    }
+});
