@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя Платформа</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div id="auth-container">
+        <h2>Добро пожаловать</h2>
+        <div id="login-form">
+            <h3>Вход</h3>
+            <input type="text" id="login-username" placeholder="Электронная почта">
+            <input type="password" id="login-password" placeholder="Пароль">
+            <button id="login-button">Войти</button>
+            <p>Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a></p>
+        </div>
+        <div id="register-form" style="display: none;">
+            <h3>Регистрация</h3>
+            <input type="text" id="register-username" placeholder="Электронная почта">
+            <input type="password" id="register-password" placeholder="Пароль">
+            <button id="register-button">Зарегистрироваться</button>
+            <p>Уже есть аккаунт? <a href="#" id="show-login">Войти</a></p>
+        </div>
+    </div>
+
+    <div id="main-container" style="display: none;">
+        <header>
+            <h1>Моя Платформа</h1>
+            <button id="logout-button">Выйти</button>
+        </header>
+        <section id="profile-section">
+            <h2>Профиль</h2>
+            <p id="profile-username"></p>
+        </section>
+        <section id="post-section">
+            <h2>Создать сообщение</h2>
+            <textarea id="post-content" placeholder="Что у вас новенького?"></textarea>
+            <button id="post-button">Отправить</button>
+        </section>
+        <section id="feed-section">
+            <h2>Лента</h2>
+            <div id="feed"></div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
