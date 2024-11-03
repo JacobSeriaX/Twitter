@@ -144,6 +144,14 @@ section {
     color: #657786;
 }
 
+/* Стили для иконки верификации */
+.verified-icon {
+    color: #1da1f2; /* Синий цвет */
+    margin-left: 5px;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
 /* Модальное окно */
 .modal {
     display: none; /* Скрыто по умолчанию */

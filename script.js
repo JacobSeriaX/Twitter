@@ -69,10 +69,11 @@ registerButton.addEventListener('click', () => {
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
             console.log(`User registered: ${userCredential.user.uid}`);
-            // Добавление пользователя в Firestore с displayName = email по умолчанию
+            // Добавление пользователя в Firestore с displayName и isVerified по умолчанию
             return db.collection('users').doc(userCredential.user.uid).set({
                 email: email,
                 displayName: email.split('@')[0], // Инициализация displayName
+                isVerified: false, // По умолчанию не проверен
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         })
@@ -130,7 +131,9 @@ function loadProfile(user) {
     db.collection('users').doc(user.uid).get().then((doc) => {
         if (doc.exists) {
             const userData = doc.data();
-            profileUsername.textContent = `Имя: ${userData.displayName}`;
+            // Добавление галочки, если пользователь проверен
+            const verifiedIcon = userData.isVerified ? '<i class="fas fa-check-circle verified-icon"></i>' : '';
+            profileUsername.innerHTML = `Имя: ${userData.displayName}${verifiedIcon}`;
             console.log(`Profile loaded for user: ${user.uid}`);
         } else {
             console.warn("No such user document!");
@@ -167,24 +170,30 @@ postButton.addEventListener('click', () => {
     }
 
     if (user) {
-        db.collection('posts').add({
-            userId: user.uid,
-            content: content,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(() => {
-            console.log('Post added');
-            postContent.value = '';
-            // Не обязательно вызывать loadFeed(), так как мы используем onSnapshot()
-        })
-        .catch((error) => {
-            console.error(`Post error: ${error.message}`);
-            alert(`Ошибка: ${error.message}`);
-        });
+        // Сохранение поста в Firestore
+        savePost(content, user.uid);
     } else {
         console.warn("Post failed: No user authenticated");
     }
 });
+
+// Функция сохранения поста в Firestore
+function savePost(content, userId) {
+    db.collection('posts').add({
+        userId: userId,
+        content: content,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        console.log('Post added');
+        postContent.value = '';
+        // Не обязательно вызывать loadFeed(), так как мы используем onSnapshot()
+    })
+    .catch((error) => {
+        console.error(`Post error: ${error.message}`);
+        alert(`Ошибка: ${error.message}`);
+    });
+}
 
 // Загрузка ленты сообщений
 function loadFeed() {
@@ -212,8 +221,11 @@ function loadFeed() {
                         const date = post.createdAt ? post.createdAt.toDate() : new Date();
                         const formattedDate = formatDate(date);
 
+                        // Добавление иконки верификации, если пользователь проверен
+                        const verifiedIcon = userData.isVerified ? '<i class="fas fa-check-circle verified-icon"></i>' : '';
+
                         postDiv.innerHTML = `
-                            <p><strong>${userData.displayName}</strong> <span>${formattedDate}</span></p>
+                            <p><strong>${userData.displayName}${verifiedIcon}</strong> <span>${formattedDate}</span></p>
                             <p>${post.content}</p>
                             <div class="reactions-container" id="reactions-${postId}">
                                 <!-- Реакции будут добавлены здесь -->
