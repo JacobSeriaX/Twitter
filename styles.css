@@ -69,3 +69,34 @@ header {
 #logout-button:hover {
     background-color: #c81e54;
 }
+
+/* Стили для реакций */
+.reactions-container {
+    display: flex;
+    margin-top: 10px;
+}
+
+.reaction-button {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #657786;
+    font-size: 16px;
+}
+
+.reaction-button:hover {
+    color: #1da1f2;
+}
+
+.reaction-button .reaction-icon {
+    margin-right: 5px;
+}
+
+.reaction-count {
+    margin-left: 5px;
+    font-size: 14px;
+    color: #657786;
+}
