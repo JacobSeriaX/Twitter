@@ -63,20 +63,37 @@ a:hover {
 
 header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 20px;
-}
-
-#feed .post {
+    padding-bottom: 10px;
     border-bottom: 1px solid #e1e8ed;
-    padding: 12px 0;
 }
 
-#feed .post:last-child {
-    border-bottom: none;
+/* Стили для контейнера логотипа */
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-right: 15px; /* Отступ между логотипом и заголовком */
 }
 
+/* Стили для логотипа */
+#logo {
+    width: 30px; /* Уменьшенная ширина логотипа */
+    height: 30px; /* Уменьшенная высота логотипа */
+    object-fit: contain; /* Сохранение пропорций изображения */
+    margin-right: 10px; /* Отступ между логотипом и названием */
+}
+
+/* Стили для заголовка в header */
+header h1 {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    color: #1da1f2;
+}
+
+/* Стили для кнопок в header */
 #logout-button, #edit-profile-button {
     background-color: #1da1f2;
     padding: 6px 12px;
@@ -222,5 +239,15 @@ section {
 
     .modal-content {
         width: 90%;
+    }
+
+    /* Уменьшение размера логотипа на маленьких экранах */
+    #logo {
+        width: 25px;
+        height: 25px;
+    }
+
+    header h1 {
+        font-size: 20px;
     }
 }
