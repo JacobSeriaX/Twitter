@@ -15,18 +15,17 @@
 <body>
     <div id="auth-container">
         <h2>Добро пожаловать</h2>
-        <div id="login-form" class="form">
+        <div id="login-form">
             <h3>Вход</h3>
-            <input type="email" id="login-username" class="input" placeholder="Электронная почта">
-            <input type="password" id="login-password" class="input" placeholder="Пароль">
+            <input type="text" id="login-username" placeholder="Электронная почта">
+            <input type="password" id="login-password" placeholder="Пароль">
             <button id="login-button">Войти</button>
-            <p><a href="#" id="forgot-password">Забыли пароль?</a></p>
             <p>Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a></p>
         </div>
-        <div id="register-form" class="form" style="display: none;">
+        <div id="register-form" style="display: none;">
             <h3>Регистрация</h3>
-            <input type="email" id="register-username" class="input" placeholder="Электронная почта">
-            <input type="password" id="register-password" class="input" placeholder="Пароль">
+            <input type="text" id="register-username" placeholder="Электронная почта">
+            <input type="password" id="register-password" placeholder="Пароль">
             <button id="register-button">Зарегистрироваться</button>
             <p>Уже есть аккаунт? <a href="#" id="show-login">Войти</a></p>
         </div>
@@ -58,7 +57,7 @@
         </section>
         <section id="post-section">
             <h2>Создать сообщение</h2>
-            <textarea id="post-content" class="input" placeholder="Что у вас новенького?"></textarea>
+            <textarea id="post-content" placeholder="Что у вас новенького?"></textarea>
             <button id="post-button">Отправить</button>
         </section>
         <section id="feed-section">
@@ -72,7 +71,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3>Редактировать профиль</h3>
-            <input type="text" id="edit-display-name" class="input" placeholder="Отображаемое имя">
+            <input type="text" id="edit-display-name" placeholder="Отображаемое имя">
             <button id="save-profile-button">Сохранить</button>
         </div>
     </div>

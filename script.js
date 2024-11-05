@@ -113,33 +113,6 @@ loginButton.addEventListener('click', () => {
         });
 });
 
-// Восстановление пароля
-const forgotPasswordLink = document.getElementById('forgot-password');
-
-if (forgotPasswordLink) {
-    forgotPasswordLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-username').value.trim();
-
-        if (email === '') {
-            alert('Пожалуйста, введите ваш E-mail для восстановления пароля.');
-            return;
-        }
-
-        auth.sendPasswordResetEmail(email)
-            .then(() => {
-                alert('Ссылка для восстановления пароля отправлена на ваш E-mail.');
-                console.log('Password reset email sent');
-            })
-            .catch((error) => {
-                console.error(`Password reset error: ${error.message}`);
-                alert(`Ошибка: ${error.message}`);
-            });
-    });
-} else {
-    console.warn("Element with id 'forgot-password' not found.");
-}
-
 // Наблюдатель состояния аутентификации
 auth.onAuthStateChanged((user) => {
     if (user) {
