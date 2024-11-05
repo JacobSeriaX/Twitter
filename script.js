@@ -16,12 +16,6 @@ const db = firebase.firestore();
 console.log("Firebase initialized");
 
 // Элементы DOM
-const showRegister = document.getElementById('show-register');
-const showLogin = document.getElementById('show-login');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const registerButton = document.getElementById('register-button');
-const loginButton = document.getElementById('login-button');
 const authContainer = document.getElementById('auth-container');
 const mainContainer = document.getElementById('main-container');
 const logoutButton = document.getElementById('logout-button');
@@ -38,59 +32,26 @@ const closeModalButton = document.querySelector('.close-button');
 const saveProfileButton = document.getElementById('save-profile-button');
 const editDisplayNameInput = document.getElementById('edit-display-name');
 
-// Переключение форм регистрации и входа
-showRegister.addEventListener('click', (e) => {
+// Элементы формы аутентификации
+const loginForm = document.getElementById('login-form');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+
+// Элементы социальных кнопок
+const googleSignInButton = document.getElementById('google-signin');
+const appleSignInButton = document.getElementById('apple-signin');
+const twitterSignInButton = document.getElementById('twitter-signin');
+
+// Элемент переключателя темы
+const themeToggle = document.getElementById('theme-toggle');
+
+/* Регистрация и Вход */
+/* В данном случае форма предназначена для входа, но можно расширить функциональность для регистрации */
+
+loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-    console.log("Switched to Register form");
-});
-
-showLogin.addEventListener('click', (e) => {
-    e.preventDefault();
-    registerForm.style.display = 'none';
-    loginForm.style.display = 'block';
-    console.log("Switched to Login form");
-});
-
-// Регистрация пользователя
-registerButton.addEventListener('click', () => {
-    const email = document.getElementById('register-username').value.trim();
-    const password = document.getElementById('register-password').value.trim();
-
-    console.log(`Attempting to register with email: ${email}`);
-
-    if (email === '' || password === '') {
-        alert('Пожалуйста, заполните все поля.');
-        console.warn("Registration failed: Empty fields");
-        return;
-    }
-
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            console.log(`User registered: ${userCredential.user.uid}`);
-            // Добавление пользователя в Firestore с displayName и isVerified по умолчанию
-            return db.collection('users').doc(userCredential.user.uid).set({
-                email: email,
-                displayName: email.split('@')[0], // Инициализация displayName
-                isVerified: false, // По умолчанию не проверен
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        })
-        .then(() => {
-            alert('Регистрация прошла успешно!');
-            console.log("User data saved to Firestore");
-        })
-        .catch((error) => {
-            console.error(`Registration error: ${error.message}`);
-            alert(`Ошибка: ${error.message}`);
-        });
-});
-
-// Вход пользователя
-loginButton.addEventListener('click', () => {
-    const email = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
 
     console.log(`Attempting to login with email: ${email}`);
 
@@ -110,7 +71,7 @@ loginButton.addEventListener('click', () => {
         });
 });
 
-// Наблюдатель состояния аутентификации
+/* Наблюдатель состояния аутентификации */
 auth.onAuthStateChanged((user) => {
     if (user) {
         console.log(`User is signed in: ${user.uid}`);
@@ -126,7 +87,7 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// Загрузка профиля пользователя
+/* Загрузка профиля пользователя */
 function loadProfile(user) {
     db.collection('users').doc(user.uid).get().then((doc) => {
         if (doc.exists) {
@@ -144,7 +105,7 @@ function loadProfile(user) {
     });
 }
 
-// Выход пользователя
+/* Выход пользователя */
 logoutButton.addEventListener('click', () => {
     auth.signOut()
         .then(() => {
@@ -156,7 +117,7 @@ logoutButton.addEventListener('click', () => {
         });
 });
 
-// Публикация сообщения
+/* Публикация сообщения */
 postButton.addEventListener('click', () => {
     const content = postContent.value.trim();
     const user = auth.currentUser;
@@ -177,7 +138,7 @@ postButton.addEventListener('click', () => {
     }
 });
 
-// Функция сохранения поста в Firestore
+/* Функция сохранения поста в Firestore */
 function savePost(content, userId) {
     db.collection('posts').add({
         userId: userId,
@@ -195,7 +156,7 @@ function savePost(content, userId) {
     });
 }
 
-// Загрузка ленты сообщений
+/* Загрузка ленты сообщений */
 function loadFeed() {
     feed.innerHTML = '';
     console.log('Loading feed');
@@ -256,7 +217,7 @@ function loadFeed() {
         });
 }
 
-// Форматирование даты
+/* Форматирование даты */
 function formatDate(date) {
     const now = new Date();
     const diffTime = now - date;
@@ -271,7 +232,7 @@ function formatDate(date) {
     }
 }
 
-// Функция для загрузки и отображения реакций
+/* Функция для загрузки и отображения реакций */
 function loadReactions(postId) {
     const reactionsContainer = document.getElementById(`reactions-${postId}`);
     console.log(`Loading reactions for post: ${postId}`);
@@ -360,7 +321,7 @@ function loadReactions(postId) {
         });
 }
 
-// Функция для обработки добавления или удаления реакции
+/* Функция для обработки добавления или удаления реакции */
 function handleReaction(postId, reactionType, userReacted, reactionDocId) {
     const currentUser = auth.currentUser;
     const reactionRef = db.collection('posts').doc(postId).collection('reactions');
@@ -380,7 +341,7 @@ function handleReaction(postId, reactionType, userReacted, reactionDocId) {
     }
 }
 
-// Открытие модального окна редактирования профиля
+/* Открытие модального окна редактирования профиля */
 editProfileButton.addEventListener('click', () => {
     const user = auth.currentUser;
     if (user) {
@@ -399,13 +360,13 @@ editProfileButton.addEventListener('click', () => {
     }
 });
 
-// Закрытие модального окна
+/* Закрытие модального окна */
 closeModalButton.addEventListener('click', () => {
     editProfileModal.style.display = 'none';
     console.log("Edit profile modal closed");
 });
 
-// Закрытие модального окна при клике вне его
+/* Закрытие модального окна при клике вне его */
 window.addEventListener('click', (event) => {
     if (event.target == editProfileModal) {
         editProfileModal.style.display = 'none';
@@ -413,7 +374,7 @@ window.addEventListener('click', (event) => {
     }
 });
 
-// Сохранение изменений профиля
+/* Сохранение изменений профиля */
 saveProfileButton.addEventListener('click', () => {
     const newDisplayName = editDisplayNameInput.value.trim();
     const user = auth.currentUser;
@@ -441,4 +402,73 @@ saveProfileButton.addEventListener('click', () => {
     } else {
         console.warn("Save profile failed: No user authenticated");
     }
+});
+
+/* Переключение темы */
+function toggleTheme() {
+    document.body.classList.toggle('dark-theme');
+    if (document.body.classList.contains('dark-theme')) {
+        localStorage.setItem('theme', 'dark');
+    } else {
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+// Инициализация темы при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeToggle.checked = true;
+    }
+});
+
+// Обработчик события переключения темы
+themeToggle.addEventListener('change', toggleTheme);
+
+/* Социальные входы */
+
+/* Важно: Для реализации социальных входов необходимо настроить соответствующие провайдеры в консоли Firebase.
+   Ниже представлен пример для Google. Для Apple и Twitter требуется дополнительная настройка и проверка */
+
+// Вход через Google
+googleSignInButton.addEventListener('click', () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log('Google sign-in successful');
+            // Дополнительная обработка, если требуется
+        })
+        .catch((error) => {
+            console.error(`Google sign-in error: ${error.message}`);
+            alert(`Ошибка: ${error.message}`);
+        });
+});
+
+// Вход через Apple
+appleSignInButton.addEventListener('click', () => {
+    const provider = new firebase.auth.OAuthProvider('apple.com');
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log('Apple sign-in successful');
+            // Дополнительная обработка, если требуется
+        })
+        .catch((error) => {
+            console.error(`Apple sign-in error: ${error.message}`);
+            alert(`Ошибка: ${error.message}`);
+        });
+});
+
+// Вход через Twitter
+twitterSignInButton.addEventListener('click', () => {
+    const provider = new firebase.auth.TwitterAuthProvider();
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log('Twitter sign-in successful');
+            // Дополнительная обработка, если требуется
+        })
+        .catch((error) => {
+            console.error(`Twitter sign-in error: ${error.message}`);
+            alert(`Ошибка: ${error.message}`);
+        });
 });
